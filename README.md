@@ -1,1 +1,7 @@
-# advent-of-code-2023-rust
+Code for https://adventofcode.com/2023
+========
+
+Each day is its own executable. Usage is:
+```
+cargo run -- <path-to-input-file>
+```
