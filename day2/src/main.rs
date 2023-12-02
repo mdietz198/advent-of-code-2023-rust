@@ -53,5 +53,5 @@ fn power(line: &str) -> Option<i32> {
             max_color.insert(color, cmp::max(max_color[color], num));
         }
     }
-    Some(max_color["red"] * max_color["green"] * max_color["blue"])
+    max_color.values().copied().reduce(|a, b| a * b)
 }
