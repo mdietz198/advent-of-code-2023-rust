@@ -8,21 +8,21 @@ fn main() {
     let input = fs::read_to_string(&args[1]).expect("Should have been able to read the file");
     let lines: Vec<&str> = input.split_terminator("\n").collect();
 
-    //let day1_result = day1(lines);
-    //print!("Day1: {day1_result:?}\n");
-    let day2_result = day2(lines);
-    print!("Day2: {day2_result:?}\n");
+    //let part1_result = part1(lines);
+    //print!("Part1:: {part1_result:?}\n");
+    let part2_result = part2(lines);
+    print!("Part2: {part2_result:?}\n");
 }
 
-fn day1(lines: Vec<&str>) -> i32 {
+fn part1(lines: Vec<&str>) -> i32 {
     let (numbers, symbol_indices) = prepare_data(lines);
     let filtered_numbers: Vec<PartNumber> = numbers.into_iter().filter(|p| p.has_adjacent_symbol(&symbol_indices)).collect();
     filtered_numbers.iter().map(|p| p.number).sum()
 }
 
-fn day2(lines: Vec<&str>) -> i32 {
+fn part2(lines: Vec<&str>) -> i32 {
     let (numbers, symbol_indices) = prepare_data(lines);
-    let gear_indices: Vec<(i32, i32)> = symbol_indices.clone().into_iter().filter(|(_, symbol)| *symbol == '*').map(|(index, _)| index).collect();
+    let gear_indices: Vec<&(i32, i32)> = symbol_indices.iter().filter(|(_, symbol)| **symbol == '*').map(|(index, _)| index).collect();
     let mut sum = 0;
     for gear_index in gear_indices {
         let mut adjacent_numbers: Vec<PartNumber> = Vec::new();
