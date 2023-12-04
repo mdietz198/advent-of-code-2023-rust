@@ -1,14 +1,17 @@
 use std::env;
 use std::fs;
-use std::collections::HashSet;
+use std::collections::HashMap;
 use regex::Regex;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let input = fs::read_to_string(&args[1]).expect("Should have been able to read the file");
     let lines: Vec<&str> = input.split_terminator("\n").collect();
-    let result = day1(lines);
-    print!("Day1: {result:?}\n");
+
+    //let day1_result = day1(lines);
+    //print!("Day1: {day1_result:?}\n");
+    let day2_result = day2(lines);
+    print!("Day2: {day2_result:?}\n");
 }
 
 fn day1(lines: Vec<&str>) -> i32 {
@@ -17,11 +20,31 @@ fn day1(lines: Vec<&str>) -> i32 {
     filtered_numbers.iter().map(|p| p.number).sum()
 }
 
-fn prepare_data(lines: Vec<&str>) -> (Vec<PartNumber>, HashSet<(i32, i32)>) {
+fn day2(lines: Vec<&str>) -> i32 {
+    let (numbers, symbol_indices) = prepare_data(lines);
+    let gear_indices: Vec<(i32, i32)> = symbol_indices.clone().into_iter().filter(|(_, symbol)| *symbol == '*').map(|(index, _)| index).collect();
+    let mut sum = 0;
+    for gear_index in gear_indices {
+        let mut adjacent_numbers: Vec<PartNumber> = Vec::new();
+        for n in &numbers {
+            if n.get_adjacent_indices_with_symbol('*', &symbol_indices).contains(&gear_index) {
+                adjacent_numbers.push(*n)
+            }
+        }
+        if adjacent_numbers.len() == 2 {
+            sum += adjacent_numbers[0].number * adjacent_numbers[1].number;
+        }
+    }
+    sum
+}
+
+fn prepare_data(lines: Vec<&str>) -> (Vec<PartNumber>, HashMap<(i32, i32), char>) {
     let re = Regex::new(r"([0-9]+)|([^.\n0-9])").unwrap();
     let mut numbers: Vec<PartNumber> = Vec::new();
-    // Set contains (row, column) starting in top left.
-    let mut symbol_indices:HashSet<(i32, i32)> = HashSet::new();
+    // Map contains:
+    // key: (row, column) starting in top left.
+    // value: the symbol at that position
+    let mut symbol_indices:HashMap<(i32, i32), char> = HashMap::new();
     for (row, l) in lines.iter().enumerate() {
         for m in re.find_iter(l) {
             let start_column = m.start();
@@ -41,17 +64,18 @@ fn prepare_data(lines: Vec<&str>) -> (Vec<PartNumber>, HashSet<(i32, i32)>) {
                         }
                     )
                 }
-                _ => {
+                Some(symbol) => {
                     // Must be a symbol
-                    symbol_indices.insert((row as i32, start_column as i32));
+                    symbol_indices.insert((row as i32, start_column as i32), symbol);
                 }
+                other => {panic!( "Unexpected Other {other:?}")}
             }
         }
     }
     (numbers, symbol_indices)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 struct PartNumber {
     number: i32,
     row: i32,
@@ -60,14 +84,26 @@ struct PartNumber {
 }
 
 impl PartNumber {
-    fn has_adjacent_symbol(&self, symbol_indices: &HashSet<(i32, i32)>) -> bool {
+    fn has_adjacent_symbol(&self, symbol_indices: &HashMap<(i32, i32), char>) -> bool {
         for i in self.row as i32 - 1 .. self.row as i32 + 2 {
             for j in self.start_column as i32 - 1 .. self.end_column as i32 + 2 {
-               if symbol_indices.contains(&(i, j)) {
+               if symbol_indices.contains_key(&(i, j)) {
                    return true
                }
             }
         }
         false
+    }
+
+    fn get_adjacent_indices_with_symbol(&self, symbol: char, symbol_indices: &HashMap<(i32, i32), char>) -> Vec<(i32, i32)> {
+        let mut result: Vec<(i32, i32)> = Vec::new();
+        for i in self.row as i32 - 1 .. self.row as i32 + 2 {
+            for j in self.start_column as i32 - 1 .. self.end_column as i32 + 2 {
+               if symbol_indices.get(&(i, j)) == Some(&symbol) {
+                   result.push((i, j));
+               }
+            }
+        }
+        result
     }
 }
