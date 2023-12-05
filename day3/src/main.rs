@@ -22,7 +22,7 @@ fn part1(lines: Vec<&str>) -> i32 {
 
 fn part2(lines: Vec<&str>) -> i32 {
     let (numbers, symbol_indices) = prepare_data(lines);
-    let gear_indices: Vec<&(i32, i32)> = symbol_indices.iter().filter(|(_, symbol)| **symbol == '*').map(|(index, _)| index).collect();
+    let gear_indices: Vec<&(i32, i32)> = symbol_indices.iter().filter(|&(_, &symbol)| symbol == '*').map(|(index, _)| index).collect();
     let mut sum = 0;
     for gear_index in gear_indices {
         let mut adjacent_numbers: Vec<PartNumber> = Vec::new();
